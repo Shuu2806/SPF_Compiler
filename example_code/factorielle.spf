@@ -1,0 +1,10 @@
+entier nombre = 5;
+entier factorielle;
+
+factorielle = 1;
+tant que nombre > 0 faire {
+    factorielle = factorielle * nombre;
+    nombre = nombre - 1;
+}
+
+afficher "La factorielle vaut", factorielle;
