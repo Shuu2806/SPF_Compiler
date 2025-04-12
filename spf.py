@@ -1,13 +1,9 @@
 import argparse
-
-from lark import Lark, Transformer
+from SPFTransformer import SPFTransformer
+from lark import Lark
 
 dumping_mode = False
 tracing_mode = False
-
-def SPFTransformer(Transformer):
-    # Definition de notre transformer pour
-    return None
 
 def getLarkParser():
     with open("spf.lark", "r") as f:
