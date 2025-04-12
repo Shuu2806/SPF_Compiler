@@ -1,7 +1,26 @@
 import argparse
 
-def parserspf(program):
-    print(program)
+from lark import Lark, Transformer
+
+dumping_mode = False
+tracing_mode = False
+
+def SPFTransformer(Transformer):
+    # Definition de notre transformer pour
+    return None
+
+def getLarkParser():
+    with open("spf.lark", "r") as f:
+        grammar = f.read()
+
+    return Lark(grammar, parser="lalr")
+
+
+def SPFParser(program):
+    parser = getLarkParser() # crée un parser avec la grammaire défini dans spf.lark
+
+    tree = parser.parse(program) # parse le fichier programme en un arbre
+    result = SPFTransformer().transform(tree)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -12,14 +31,17 @@ def main():
     args = parser.parse_args()
 
     if args.dump:
-        print("mode dumping")
+        print("dumping mode on")
+        dumping_mode = True
+
     if args.trace:
-        print("mode tracing")
+        print("tracing mode on")
+        tracing_mode = True
 
     try:
-        with open(args.input, "r") as f:
+        with open("example_code/" + args.input, "r") as f:
             program = f.read()
-            parserspf(program)
+            SPFParser(program)
     except FileNotFoundError:
         print(f"Erreur : le fichier '{args.input}' est introuvable.")
     except Exception as e:
