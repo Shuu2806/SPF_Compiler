@@ -1,0 +1,15 @@
+?start : program                                        # commence avec un programme
+
+?program : instructions                                 # un programme est plusieurs instructions
+
+?instructions : instruction ";" instructions*           # regarde chaque instruction du programme
+
+?instruction : instruction_print                        # permet d'avoir plusieurs type d'instruction
+             | instruction_if
+             | instruction_for
+             | assignation
+
+?instruction_print : afficher (string | variable) ("," (string | variable))*
+
+%import common.WS                                       # importe les espaces blancs (tab,space,etc)
+%ignore WS                                              # ignore les espaces blancs
