@@ -16,7 +16,7 @@ def SPFParser(program):
     parser = getLarkParser() # crée un parser avec la grammaire défini dans spf.lark
 
     tree = parser.parse(program) # parse le fichier programme en un arbre
-    result = SPFTransformer().transform(tree)
+    result = SPFTransformer(dumping_mode,tracing_mode).transform(tree)
 
 def main():
     parser = argparse.ArgumentParser()
