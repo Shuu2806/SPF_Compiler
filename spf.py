@@ -15,10 +15,19 @@ def getLarkParser():
 def SPFParser(program):
     parser = getLarkParser() # crée un parser avec la grammaire défini dans spf.lark
 
+
     tree = parser.parse(program) # parse le fichier programme en un arbre
+
+    #print("Arbre syntaxique :")
+    #print(tree.pretty())
+
     result = SPFTransformer(dumping_mode,tracing_mode).transform(tree)
 
+    #print("\nRésultat :", result)
+
 def main():
+    global dumping_mode, tracing_mode
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", type=str, required=True, help="Input file")
     parser.add_argument("--dump", action="store_true", help="Dump mode")
