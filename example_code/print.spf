@@ -1,0 +1,5 @@
+texte phrase = "test 1";
+
+phrase = "Bonjour à tout le monde";
+
+afficher phrase, "test 2";

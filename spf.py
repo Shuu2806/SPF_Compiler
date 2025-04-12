@@ -18,8 +18,8 @@ def SPFParser(program):
 
     tree = parser.parse(program) # parse le fichier programme en un arbre
 
-    #print("Arbre syntaxique :")
-    #print(tree.pretty())
+    print("Arbre syntaxique :")
+    print(tree.pretty())
 
     result = SPFTransformer(dumping_mode,tracing_mode).transform(tree)
 
