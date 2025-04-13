@@ -1,36 +1,29 @@
-%import common.WS                                       # importe les espaces blancs (tab,space,etc)
-%import common.CNAME                                    # identifiant
-%import common.ESCAPED_STRING                           # string
+%import common.WS
+%import common.CNAME
+%import common.ESCAPED_STRING
 
-?start : program                                        # commence avec un programme
+start : program
 
-?program : instructions                                 # un programme est plusieurs instructions
+program : instructions
 
-?instructions : instruction instructions*              # regarde chaque instruction du programme
+instructions : instruction+
 
-?instruction : instruction_print ";"                    # permet d'avoir plusieurs type d'instruction
-             | assignation ";"
-             | declaration ";"
-# | instruction_if | instruction_for
+instruction : instruction_print ";"
+            | assignation ";"
+            | declaration ";"
 
-?instruction_print : "afficher" (string | variable) ("," (string | variable))* -> afficher
+instruction_print : "afficher" (STRING | VARIABLE) ("," (STRING | VARIABLE))* -> afficher
 
-?declaration : type variable "=" value -> declaration
-             | type variable           -> declaration
+declaration : TYPE VARIABLE "=" VALUE        -> declaration
+            | TYPE VARIABLE                  -> declaration
 
-?assignation : variable "=" value -> assignation
+assignation : VARIABLE "=" VALUE          -> assignation
 
-?value : string
-
-?variable : CNAME
-
-?string : ESCAPED_STRING
-
-?type : "entier"
-      | "liste"
-      | "booléen"
-      | "texte"
+TYPE.2: "entier" | "liste" | "booléen" | "texte" # priorité sinon erreur avec variable
+VALUE : STRING
+STRING : ESCAPED_STRING
+VARIABLE : CNAME
 
 COMMENT: "#" /[^\n]/*
-%ignore WS                                              # ignore les espaces blancs
+%ignore WS
 %ignore COMMENT
