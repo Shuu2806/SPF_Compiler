@@ -14,14 +14,14 @@ instruction : instruction_print ";"
 
 instruction_print : "afficher" (chaine | VARIABLE) ("," (chaine | VARIABLE))* -> afficher
 
-declaration : TYPE VARIABLE "=" expression        -> declaration
+declaration : TYPE VARIABLE "=" expression   -> declaration
             | TYPE VARIABLE                  -> declaration
 
 assignation : VARIABLE "=" expression          -> assignation
 
 TYPE.2: "entier" | "liste" | "booléen" | "texte" # priorité 2 sinon erreur avec variable
 
-expression : or_expression
+?expression : value
 
 or_expression: or_expression "ou" and_expression    -> operation_or
              | and_expression
@@ -62,9 +62,9 @@ extract_expression : extract_expression "[" arith_expression "]"  ->operatio_ext
 
 
 
-value : chaine | liste | entier | booleen
+?value : chaine | liste | entier | booleen
 chaine : ESCAPED_STRING
-liste : list
+?liste : list
 entier : NUMBER
 booleen : BOOLEAN
 

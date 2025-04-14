@@ -1,6 +1,7 @@
 booléen is_true;
+is_true = vrai;
 texte phrase = "Hello world";
-entier i = 4 + 8;
-liste liste = [1, 2, 3];
+entier i = 4;
+liste liste_entier = [1, 2, 3];
 
-afficher is_true,phrase,i,liste,"test";
+afficher is_true,phrase,i,liste_entier,"test";

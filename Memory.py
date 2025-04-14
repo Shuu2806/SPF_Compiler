@@ -32,7 +32,7 @@ class Memory:
 
     @dump
     @ensure_scope
-    def declare(self, variable, var_type):
+    def declare(self, var_type, variable):
         new_var = Value()
         new_var.declare(var_type)
 

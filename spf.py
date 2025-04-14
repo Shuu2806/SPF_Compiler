@@ -1,5 +1,6 @@
 import argparse
-from SPFTransformer import SPFTransformer
+
+from SPFInterpreter import SPFInterpreter
 from lark import Lark
 
 dumping_mode = False
@@ -20,7 +21,8 @@ def SPFParser(program):
     print("Arbre syntaxique :")
     print(tree.pretty())
 
-    SPFTransformer(dumping_mode,tracing_mode).transform(tree)
+    SPFInterpreter(dumping_mode, tracing_mode).visit(tree)
+    #SPFTransformer(dumping_mode,tracing_mode).transform(tree)
 
 def main():
     global dumping_mode, tracing_mode
