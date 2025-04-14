@@ -14,12 +14,53 @@ instruction : instruction_print ";"
 
 instruction_print : "afficher" (chaine | VARIABLE) ("," (chaine | VARIABLE))* -> afficher
 
-declaration : TYPE VARIABLE "=" value        -> declaration
+declaration : TYPE VARIABLE "=" expression        -> declaration
             | TYPE VARIABLE                  -> declaration
 
-assignation : VARIABLE "=" value          -> assignation
+assignation : VARIABLE "=" expression          -> assignation
 
 TYPE.2: "entier" | "liste" | "booléen" | "texte" # priorité 2 sinon erreur avec variable
+
+expression : or_expression
+
+or_expression: or_expression "ou" and_expression    -> operation_or
+             | and_expression
+
+and_expression: and_expression "et" not_expression  -> aperation_and
+              | not_expression
+
+not_expression: "non" not_expression  -> operation_not
+              | compar_expression
+
+compar_expression: compar_expression ("vaut" | "==") arith_expression                  -> operation_equal
+                 | compar_expression ("ne" "vaut" "pas" | "!=" ) arith_expression      -> operation_not_equal
+                 | compar_expression "<=" arith_expression                             -> operation_less_than_equal
+                 | compar_expression "<" arith_expression                              -> operation_less_than
+                 | compar_expression ">=" arith_expression                             -> operation_greater_than_equal
+                 | compar_expression ">" arith_expression                              -> operation_greater_than
+                 | arith_expression
+
+arith_expression: sum
+
+sum : sum "+" term     -> operation_add
+    | sum "-" term     -> operation_sub
+    | term
+
+term : term "*" neg_expression   -> operation_mul
+     | term "/" neg_expression   -> operation_div
+     | neg_expression
+
+neg_expression : "-" neg_expression  -> operation_neg
+               | size_expression 
+
+size_expression : "taille" extract_expression     -> operation_size
+               | extract_expression
+
+extract_expression : extract_expression "[" arith_expression "]"  ->operatio_extract
+                   | value
+                   | "(" expression ")"
+
+
 
 value : chaine | liste | entier | booleen
 chaine : ESCAPED_STRING
@@ -31,7 +72,16 @@ list : "[" (value ("," value)*)? "]"
 NUMBER : /[0-9]/ | /[1-9][0-9]+/
 BOOLEAN : /vrai/ | /faux/
 VARIABLE : CNAME
+VAR_NAME : LETTER (LETTER | DIGIT)*
+LETTER : /[a-zA-ZàâäéèêëîïôöùûüÿÀÂÄÉÈÊËÎÏÔÖÙÛÜŸ_]/
 
 COMMENT: "#" /[^\n]/*
 %ignore WS
 %ignore COMMENT
+%ignore LETTER
+%ignore DIGIT
+
+%import common.ESCAPED_STRING
+%import common.SIGNED_INT
+%import common.DIGIT
+%import common.WS

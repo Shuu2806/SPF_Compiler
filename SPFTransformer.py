@@ -103,3 +103,12 @@ class SPFTransformer(Transformer):
     @trace
     def booleen(self,args):
         return args[0].value == 'vrai'
+    
+    @trace
+    @exception_handler
+    def opeartion_add(self, args):
+        left = args[0]
+        right = args[1]
+        return left + right
+
+  
