@@ -6,10 +6,10 @@ dumping_mode = False
 tracing_mode = False
 
 def getLarkParser():
-    with open("spf.lark", "r") as f:
+    with open("spf.lark", "r",encoding='utf-8') as f:
         grammar = f.read()
 
-    return Lark(grammar, parser="lalr")
+    return Lark(grammar, parser="lalr", propagate_positions=True)
 
 
 def SPFParser(program):
@@ -20,9 +20,7 @@ def SPFParser(program):
     print("Arbre syntaxique :")
     print(tree.pretty())
 
-    result = SPFTransformer(dumping_mode,tracing_mode).transform(tree)
-
-    #print("\nRésultat :", result)
+    SPFTransformer(dumping_mode,tracing_mode).transform(tree)
 
 def main():
     global dumping_mode, tracing_mode
@@ -35,15 +33,13 @@ def main():
     args = parser.parse_args()
 
     if args.dump:
-        print("dumping mode on")
         dumping_mode = True
 
     if args.trace:
-        print("tracing mode on")
         tracing_mode = True
 
     try:
-        with open("example_code/" + args.input, "r") as f:
+        with open("example_code/" + args.input, "r", encoding='utf-8') as f:
             program = f.read()
             SPFParser(program)
     except FileNotFoundError:

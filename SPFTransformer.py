@@ -1,67 +1,87 @@
 from lark import Transformer, Token
 from type import Type
-import functools
+from Memory import Memory
+from functools import wraps
+from SPFException import *
 
 def trace(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        if args[0].tracing_mode:
-            arg_str = ', '.join(
-                [repr(a) for a in args[1:]] +
-                [f"{k}={v!r}" for k, v in kwargs.items()]
-            )
-            print(f"[TRACE] Appel de {func.__name__}({arg_str})")
-
-        result = func(*args, **kwargs)
-
-        if args[0].tracing_mode:
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self.tracing_mode:
+            print(f"[TRACE] Appel de {func.__name__}({', '.join(map(repr, args))})")
+        result = func(self, *args, **kwargs)
+        if self.tracing_mode:
             print(f"[TRACE] {func.__name__} a retourné {result!r}")
-
         return result
     return wrapper
 
+def exception_handler(func):
+    @wraps(func)
+    def wrapper(self,*args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except Exception as e: #TODO REFAIRE AU PROPRE
+            current_token = args[0][0]
+
+            if isinstance(e, SPFUnknownVariable):
+                print(f"[ERROR] Line {current_token.line} : The variable '{current_token}' is not defined")
+            elif isinstance(e, SPFUninitializedVariable):
+                print(f"[ERROR] Line {current_token.line} : The variable '{current_token}' is not initialized")
+            elif isinstance(e, SPFAlreadyDefined):
+                current_token = args[0][1]
+                print(f"[ERROR] Line {current_token.line} : The variable '{current_token}' is already defined in this scope")
+            elif isinstance(e, SPFIncompatibleType):
+                print(f"[ERROR] Line {current_token.line} : Type error '{current_token}' blabla")
+
+            raise Exception
+    return wrapper
 
 class SPFTransformer(Transformer):
 
     def __init__(self, dumping_mode=False, tracing_mode=False):
         super().__init__()
-        self.dumping_mode = dumping_mode
         self.tracing_mode = tracing_mode
-        self.symbol_table = {}
+        self.symbol_table = Memory(dumping_mode)
 
     @trace
+    @exception_handler
     def declaration(self, args):
-        type = args[0].value
+        var_type = args[0].value
         variable = args[1].value
+
+        new_var = self.symbol_table.declare(variable, Type(var_type))
 
         if len(args) == 3:
             sub_tree = args[2]
             value = sub_tree.children[0]
-            self.symbol_table[variable] = {'type': type, 'value': value}
-        else:
-            self.symbol_table[variable] = {'type': Type(type)}
 
-        return self.symbol_table[variable]
+            new_var = self.symbol_table.set(variable,value)
+
+        return new_var
 
     @trace
+    @exception_handler
     def assignation(self, args):
         variable = args[0].value
         value = args[1].children[0]
 
-        self.symbol_table[variable]['value'] = value
+        new_var = self.symbol_table.set(variable,value)
 
-        return self.symbol_table[variable]
+        return new_var
 
     @trace
+    @exception_handler
     def afficher(self, args):
-        printed = ""
+        result = []
         for arg in args:
             if isinstance(arg, Token):
-                string = self.symbol_table[arg.value]['value']
+                value = self.symbol_table.get(arg.value)
+                string = value.get_value()
             else:
                 string = arg
-            print(string)
-            printed += str(string) + " "
+            result.append(str(string))
+        printed = " ".join(result)
+        print(printed)
         return printed
 
     @trace
