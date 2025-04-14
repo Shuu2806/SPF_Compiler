@@ -12,16 +12,24 @@ instruction : instruction_print ";"
             | assignation ";"
             | declaration ";"
 
-instruction_print : "afficher" (STRING | VARIABLE) ("," (STRING | VARIABLE))* -> afficher
+instruction_print : "afficher" (chaine | VARIABLE) ("," (chaine | VARIABLE))* -> afficher
 
-declaration : TYPE VARIABLE "=" VALUE        -> declaration
+declaration : TYPE VARIABLE "=" value        -> declaration
             | TYPE VARIABLE                  -> declaration
 
-assignation : VARIABLE "=" VALUE          -> assignation
+assignation : VARIABLE "=" value          -> assignation
 
-TYPE.2: "entier" | "liste" | "booléen" | "texte" # priorité sinon erreur avec variable
-VALUE : STRING
-STRING : ESCAPED_STRING
+TYPE.2: "entier" | "liste" | "booléen" | "texte" # priorité 2 sinon erreur avec variable
+
+value : chaine | liste | entier | booleen
+chaine : ESCAPED_STRING
+liste : list
+entier : NUMBER
+booleen : BOOLEAN
+
+list : "[" (value ("," value)*)? "]"
+NUMBER : /[0-9]/ | /[1-9][0-9]+/
+BOOLEAN : /vrai/ | /faux/
 VARIABLE : CNAME
 
 COMMENT: "#" /[^\n]/*
