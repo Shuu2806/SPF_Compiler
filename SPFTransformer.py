@@ -1,5 +1,25 @@
 from lark import Transformer, Token
 from type import Type
+import functools
+
+def trace(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if args[0].tracing_mode:
+            arg_str = ', '.join(
+                [repr(a) for a in args[1:]] +
+                [f"{k}={v!r}" for k, v in kwargs.items()]
+            )
+            print(f"[TRACE] Appel de {func.__name__}({arg_str})")
+
+        result = func(*args, **kwargs)
+
+        if args[0].tracing_mode:
+            print(f"[TRACE] {func.__name__} a retourné {result!r}")
+
+        return result
+    return wrapper
+
 
 class SPFTransformer(Transformer):
 
@@ -9,6 +29,7 @@ class SPFTransformer(Transformer):
         self.tracing_mode = tracing_mode
         self.symbol_table = {}
 
+    @trace
     def declaration(self, args):
         type = args[0].value
         variable = args[1].value
@@ -22,6 +43,7 @@ class SPFTransformer(Transformer):
 
         return self.symbol_table[variable]
 
+    @trace
     def assignation(self, args):
         variable = args[0].value
         value = args[1].children[0]
@@ -30,16 +52,19 @@ class SPFTransformer(Transformer):
 
         return self.symbol_table[variable]
 
+    @trace
     def afficher(self, args):
         printed = ""
         for arg in args:
-            string = ""
             if isinstance(arg, Token):
                 string = self.symbol_table[arg.value]['value']
             else:
                 string = arg
             print(string)
+            printed += str(string) + " "
+        return printed
 
+    @trace
     def liste(self,args):
         list = []
         tree = args[0]
@@ -47,11 +72,14 @@ class SPFTransformer(Transformer):
             list.append(sub_tree.children[0])
         return list
 
+    @trace
     def entier(self,args):
         return int(args[0].value)
 
+    @trace
     def chaine(self,args):
         return args[0].value[1:-1]
 
+    @trace
     def booleen(self,args):
         return args[0].value == 'vrai'
