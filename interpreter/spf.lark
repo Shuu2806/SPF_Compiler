@@ -1,0 +1,77 @@
+%import common.WS
+%import common.CNAME
+%import common.ESCAPED_STRING
+
+start : program
+
+program : instructions
+
+instructions : instruction+
+
+instruction : instruction_print ";"
+            | assignation ";"
+            | declaration ";"
+
+instruction_print : "afficher" (chaine | VARIABLE) ("," (chaine | VARIABLE))* -> afficher
+
+declaration : TYPE VARIABLE "=" value                       -> declaration
+            | TYPE VARIABLE                                 -> declaration
+
+assignation : VARIABLE "=" value                            -> assignation
+
+?expression : bool_expression
+            | math_expression
+
+?math_expression : expression_additive
+
+?expression_additive : expression_additive "+" expression_multiplicative -> expression_add
+                     | expression_additive "-" expression_multiplicative -> expression_sub
+                     | expression_multiplicative
+
+?expression_multiplicative : expression_multiplicative "*" negative_math_expression -> expression_mul
+                           | expression_multiplicative "/" negative_math_expression -> expression_div
+                           | negative_math_expression
+
+?negative_math_expression :  "-" negative_math_expression -> expression_neg
+                          | "(" math_expression ")"
+                          | entier
+
+?bool_expression : or_expression
+
+?or_expression : or_expression "ou" and_expression -> expression_or
+               | and_expression
+
+?and_expression : and_expression "et" not_expression -> expression_and
+                | not_expression
+
+?not_expression : "non" not_expression -> expression_not
+                | expression_compare
+
+?expression_compare : expression_compare ("vaut" | "==") bool_expression             -> operation_equals
+                    | expression_compare ("ne" "vaut" "pas" | "!=") bool_expression  -> operation_not_equals
+                    | math_expression "<=" math_expression -> operation_less_than_equal
+                    | math_expression "<" math_expression -> operation_less_than
+                    | math_expression ">=" math_expression -> operation_greater_than_equal
+                    | math_expression ">" math_expression -> operation_greater_than
+                    | "(" bool_expression ")"
+                    | booleen
+
+TYPE.2: "entier" | "liste" | "booléen" | "texte" # priorité 2 sinon erreur avec variable
+
+?value : chaine | liste | expression
+chaine : ESCAPED_STRING
+liste : list
+entier : NUMBER
+booleen : BOOLEAN
+
+list : "[" (value ("," value)*)? "]"
+NUMBER : /0/ | /[1-9][0-9]*/
+BOOLEAN : /vrai/ | /faux/
+VARIABLE : CNAME
+
+COMMENT: "#" /[^\n]/*
+%ignore WS
+%ignore COMMENT
+
+%import common.ESCAPED_STRING
+%import common.WS

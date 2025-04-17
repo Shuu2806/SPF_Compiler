@@ -1,5 +1,5 @@
-from SPFException import SPFIncompatibleType, SPFUnknownVariable, SPFUninitializedVariable
-from type import Type,get_type
+from interpreter.SPFException import *
+from interpreter.type import Type,get_type
 
 class Value:
     def __init__(self):
@@ -31,12 +31,3 @@ class Value:
         if not self.is_initialized:
             return f"<(uninitialized) type={self.var_type}>"
         return f"<type={self.var_type},value={self.var_value}>"
-
-    #def get(self):
-    #    if not self.is_initialized:
-    #        raise SPFUninitializedVariable()
-#
-    #    return self.var_value
-#
-    #def typeof(self):
-    #    return self.var_type

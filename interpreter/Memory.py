@@ -1,6 +1,6 @@
-from Value import Value
+from interpreter.Value import Value
 from functools import wraps
-from SPFException import *
+from interpreter.SPFException import *
 
 def dump(func):
     @wraps(func)

@@ -1,13 +1,13 @@
 import argparse
 
-from SPFInterpreter import SPFInterpreter
+from interpreter.SPFInterpreter import SPFInterpreter
 from lark import Lark
 
 dumping_mode = False
 tracing_mode = False
 
 def getLarkParser():
-    with open("spf.lark", "r",encoding='utf-8') as f:
+    with open("interpreter/spf.lark", "r", encoding='utf-8') as f:
         grammar = f.read()
 
     return Lark(grammar, parser="lalr", propagate_positions=True)
