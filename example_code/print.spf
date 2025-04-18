@@ -1,7 +1,6 @@
 booléen is_true;
-is_true = [1,2] == [1,2];
+is_true = vrai == faux;
 #texte phrase = "Hello world";
 entier i = (4 + -(2 + 2 * 4 / 2))/-1;
-#liste liste_entier = [1, 2, 3];
 
 afficher i;

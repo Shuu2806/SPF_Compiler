@@ -1,0 +1,89 @@
+%import common.ESCAPED_STRING
+%import common.WS
+%import common.CNAME
+%ignore WS
+%ignore COMMENT
+
+start : program
+
+program : instructions
+
+instructions : instruction+
+
+instruction : instruction_print ";"
+            | assignation ";"
+            | declaration ";"
+            #| instruction_if
+            #| instruction_loop
+
+instruction_print : "afficher" value ("," value)*           -> print_value
+
+declaration : TYPE VARIABLE "=" value                         -> declare
+            | TYPE VARIABLE                                 -> declare
+
+assignation : VARIABLE "=" value                              -> assign
+
+list : "[" (value ("," value)*)? "]"
+
+?exp : bool_exp
+     | math_exp
+
+value : STRING
+      | VARIABLE
+      | list
+      | exp
+
+# Mathematical expressions
+
+?math_exp : math_exp_add
+
+?math_exp_add : math_exp_add ADDITIVE math_exp_mul          -> exp_additive
+              | math_exp_mul
+
+?math_exp_mul : math_exp_mul MULTIPLICATIVE math_exp_neg    -> exp_multiplicative
+              | math_exp_neg
+
+?math_exp_neg : "-" math_exp_neg -> exp_neg
+              | "(" math_exp ")"
+              | INTEGER
+
+# Boolean expressions
+
+?bool_exp : or_exp
+
+?or_exp : or_exp "ou" and_exp -> exp_or
+        | and_exp
+
+?and_exp : and_exp "et" not_exp -> exp_and
+         | not_exp
+
+?not_exp : "non" not_exp -> exp_not
+         | comp_exp
+
+?comp_exp : bool_exp COMPARATOR comp_value                  -> operation_comparator
+          | math_exp MATH_COMPARATOR math_exp               -> operation_math_comparator
+          | "(" comp_exp ")"
+          | comp_value
+
+comp_value : INTEGER
+           | VARIABLE
+           | STRING
+           | BOOLEAN
+           | list
+
+# axiom
+
+ADDITIVE : "+" | "-"
+MULTIPLICATIVE : "*" | "/"
+
+COMPARATOR : "==" | "!=" | "vaut" | "ne vaut pas"
+MATH_COMPARATOR : "<=" | "<" | ">=" | ">"
+
+TYPE.2 : "entier" | "liste" | "booléen" | "texte"
+
+INTEGER : "0" | /[1-9][0-9]*/
+BOOLEAN : "vrai" | "faux"
+STRING : ESCAPED_STRING
+VARIABLE : CNAME
+
+COMMENT: "#" /[^\n]/*
