@@ -1,6 +1,8 @@
+%import common.ESCAPED_STRING
 %import common.WS
 %import common.CNAME
-%import common.ESCAPED_STRING
+%ignore WS
+%ignore COMMENT
 
 start : program
 
@@ -11,67 +13,62 @@ instructions : instruction+
 instruction : instruction_print ";"
             | assignation ";"
             | declaration ";"
+            #| instruction_if
+            #| instruction_for_loop
+            #| instruction_while_loop
 
-instruction_print : "afficher" (chaine | VARIABLE) ("," (chaine | VARIABLE))* -> afficher
+declaration : TYPE VARIABLE "=" exp                          -> declare
+            | TYPE VARIABLE                                  -> declare
 
-declaration : TYPE VARIABLE "=" value                       -> declaration
-            | TYPE VARIABLE                                 -> declaration
+assignation : VARIABLE "=" exp                               -> assign
 
-assignation : VARIABLE "=" value                            -> assignation
+instruction_print : "afficher" exp ("," exp)*                -> print_exp
 
-?expression : bool_expression
-            | math_expression
+?exp : or_exp
 
-?math_expression : expression_additive
+?or_exp : or_exp "ou" and_exp                                -> exp_or
+        | and_exp
 
-?expression_additive : expression_additive "+" expression_multiplicative -> expression_add
-                     | expression_additive "-" expression_multiplicative -> expression_sub
-                     | expression_multiplicative
+?and_exp : and_exp "et" not_exp                              -> exp_and
+         | not_exp
 
-?expression_multiplicative : expression_multiplicative "*" negative_math_expression -> expression_mul
-                           | expression_multiplicative "/" negative_math_expression -> expression_div
-                           | negative_math_expression
+?not_exp : "non" not_exp                                     -> exp_not
+         | comp_exp
 
-?negative_math_expression :  "-" negative_math_expression -> expression_neg
-                          | "(" math_expression ")"
-                          | entier
+?comp_exp : comp_exp COMPARATOR math_exp_add                 -> operation_comparator
+          | comp_exp MATH_COMPARATOR math_exp_add            -> operation_math_comparator
+          | math_exp_add
 
-?bool_expression : or_expression
+?math_exp_add : math_exp_add ADDITIVE math_exp_mul           -> exp_additive
+              | math_exp_mul
 
-?or_expression : or_expression "ou" and_expression -> expression_or
-               | and_expression
+?math_exp_mul : math_exp_mul MULTIPLICATIVE math_exp_neg     -> exp_multiplicative
+              | math_exp_neg
 
-?and_expression : and_expression "et" not_expression -> expression_and
-                | not_expression
+?math_exp_neg : "-" math_exp_neg                             -> exp_neg
+              | atom
 
-?not_expression : "non" not_expression -> expression_not
-                | expression_compare
+?atom : value
+      | list
+      | "(" exp ")"
 
-?expression_compare : expression_compare ("vaut" | "==") bool_expression             -> operation_equals
-                    | expression_compare ("ne" "vaut" "pas" | "!=") bool_expression  -> operation_not_equals
-                    | math_expression "<=" math_expression -> operation_less_than_equal
-                    | math_expression "<" math_expression -> operation_less_than
-                    | math_expression ">=" math_expression -> operation_greater_than_equal
-                    | math_expression ">" math_expression -> operation_greater_than
-                    | "(" bool_expression ")"
-                    | booleen
+list : "[" (exp ("," exp)*)? "]"                             -> list_value
 
-TYPE.2: "entier" | "liste" | "booléen" | "texte" # priorité 2 sinon erreur avec variable
+?value : STRING                                              -> string_value
+       | NUMBER                                              -> number_value
+       | BOOLEAN                                             -> boolean_value
+       | VARIABLE                                            -> variable_value
 
-?value : chaine | liste | expression
-chaine : ESCAPED_STRING
-liste : list
-entier : NUMBER
-booleen : BOOLEAN
+ADDITIVE : "+" | "-"
+MULTIPLICATIVE : "*" | "/"
 
-list : "[" (value ("," value)*)? "]"
-NUMBER : /0/ | /[1-9][0-9]*/
-BOOLEAN : /vrai/ | /faux/
+COMPARATOR : "==" | "!=" | "vaut" | "ne vaut pas"
+MATH_COMPARATOR : "<=" | "<" | ">=" | ">"
+
+STRING.2 : ESCAPED_STRING
+NUMBER.2 : /0/ | /[1-9][0-9]*/
+BOOLEAN.2 : "vrai" | "faux"
+
+TYPE.2 : "entier" | "liste" | "booléen" | "texte"
 VARIABLE : CNAME
-
 COMMENT: "#" /[^\n]/*
-%ignore WS
-%ignore COMMENT
-
-%import common.ESCAPED_STRING
-%import common.WS

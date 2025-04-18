@@ -46,23 +46,59 @@ class SPFInterpreter(Interpreter):
     def declare(self,tree):
         children = tree.children
 
-        var_type = children[0].value # 1er child -> Token -> type
-        var_name = children[1].value # 2e  child -> Token -> Name
+        var_type = children[0].value
+        var_name = children[1].value
 
-        self.symbol_table.declare(var_type, var_name) # Create new value object uninitialized
+        self.symbol_table.declare(var_type, var_name)
 
-        if len(children) == 3: # if 3e Child -> Tree -> value
-            value = self.visit(children[2]) # Visit the tree for the value
-            self.symbol_table.set(var_name, value) # assignation of the value to the value object
+        if len(children) == 3:
+            value = self.visit(children[2])
+            self.symbol_table.set(var_name, value)
 
     @trace
     def assign(self, tree):
         children = tree.children
 
-        var_name = children[0].value    # 1er child -> Token -> Name
-        value = self.visit(children[1]) # 2e child -> Tree -> Visit for get the value
+        var_name = children[0].value
+        value = self.visit(children[1])
 
-        self.symbol_table.set(var_name, value)  # assignation of the value to the value object
+        self.symbol_table.set(var_name, value)
+
+    def print_exp(self, tree):
+        children = tree.children
+        result = []
+
+        for child in children:
+            value = self.visit(child)
+            result.append(str(value))
+
+        printed = " ".join(result)
+        print(printed)
+
+    # ========== Bool ==========
+
+    def exp_or(self,tree):
+        children = tree.children
+
+        left = self.visit(children[0])
+        right = self.visit(children[1])
+
+        return left or right
+
+    def exp_and(self,tree):
+        children = tree.children
+
+        left = self.visit(children[0])
+        right = self.visit(children[1])
+
+        return left and right
+
+    def exp_not(self,tree):
+        children = tree.children
+
+        child = self.visit(children[0])
+
+        return not child
 
     def operation_comparator(self, tree):
         children = tree.children
@@ -90,7 +126,7 @@ class SPFInterpreter(Interpreter):
             case ">=":
                 return left >= right
 
-    # ========== Basic ==========
+    # ========== Math ==========
 
     def exp_additive(self,tree):
         children = tree.children
@@ -120,11 +156,23 @@ class SPFInterpreter(Interpreter):
 
         return -child
 
+    # ========== Basic ==========
+
+    def variable_value(self,tree):
+        children = tree.children
+        var_name = children[0].value
+
+        # Throw exception if variable is not declared or initialized
+        var = self.symbol_table.get(var_name)
+        value = var.get_value()
+
+        return value
+
     def number_value(self, tree):
         children = tree.children
         return int(children[0])
 
-    def boolean_value(self,tree):
+    def string_value(self,tree):
         children = tree.children
         return children[0].value[1:-1]
 
@@ -133,7 +181,8 @@ class SPFInterpreter(Interpreter):
         return children[0].value == 'vrai'
 
     def liste(self,tree):
+        children = tree.children
         list = []
-        for child in tree.children:
-            list.append(child)
+        for child in children:
+            list.append(self.visit(child))
         return list

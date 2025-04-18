@@ -1,6 +1,7 @@
+liste nouvelle_liste = [1+1, 2 == 2, 3 >= 3];
 booléen is_true;
-is_true = 2 >= 3;
-#texte phrase = "Hello world";
+is_true = nouvelle_liste == [2, vrai, vrai];
+texte phrase = "Hello world";
 entier i = (4 + -(2 + 2 * 4 / 2))/-1;
 
-afficher i;
+afficher i, is_true, nouvelle_liste, phrase, "Hello world", 1, 2, 3;

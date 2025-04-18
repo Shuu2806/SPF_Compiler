@@ -7,7 +7,7 @@ dumping_mode = False
 tracing_mode = False
 
 def getLarkParser():
-    with open("interpreter/test2spf.lark", "r", encoding='utf-8') as f:
+    with open("interpreter/spf.lark", "r", encoding='utf-8') as f:
         grammar = f.read()
 
     return Lark(grammar, parser="lalr", propagate_positions=True)
