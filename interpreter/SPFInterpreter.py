@@ -43,7 +43,7 @@ class SPFInterpreter(Interpreter):
         self.symbol_table = Memory(dumping_mode)
 
     @trace
-    def declaration(self,tree):
+    def declare(self,tree):
         children = tree.children
 
         var_type = children[0].value # 1er child -> Token -> type
@@ -56,7 +56,7 @@ class SPFInterpreter(Interpreter):
             self.symbol_table.set(var_name, value) # assignation of the value to the value object
 
     @trace
-    def assignation(self, tree):
+    def assign(self, tree):
         children = tree.children
 
         var_name = children[0].value    # 1er child -> Token -> Name
@@ -64,143 +64,73 @@ class SPFInterpreter(Interpreter):
 
         self.symbol_table.set(var_name, value)  # assignation of the value to the value object
 
-    @trace
-    def afficher(self, tree):
-        result = []
-        for child in tree.children:
-            if isinstance(child, Tree):
-                result.append(self.visit(child))
-            elif isinstance(child, Token):
-                value = self.symbol_table.get(child.value)
-                result.append(str(value.get_value()))
-        printed = ' '.join(result)
-        print(printed)
-
-    # TODO BCP DE CODE DUPLIQUER PEUT OPTI
-    # ========== Math expression ==========
-
-    def expression_add(self, tree):
+    def operation_comparator(self, tree):
         children = tree.children
 
         left = self.visit(children[0])
-        right = self.visit(children[1])
+        operator = children[1].value
+        right = self.visit(children[2])
 
-        return left + right
+        return (left == right) if operator == "==" else (left != right)
 
-    def expression_sub(self, tree):
+    def operation_math_comparator(self,tree):
         children = tree.children
 
         left = self.visit(children[0])
-        right = self.visit(children[1])
+        operator = children[1].value
+        right = self.visit(children[2])
 
-        return left - right
+        match operator:
+            case "<":
+                return left < right
+            case ">":
+                return left > right
+            case "<=":
+                return left <= right
+            case ">=":
+                return left >= right
 
-    def expression_mul(self, tree):
+    # ========== Basic ==========
+
+    def exp_additive(self,tree):
         children = tree.children
 
         left = self.visit(children[0])
-        right = self.visit(children[1])
+        operator = children[1].value
+        right = self.visit(children[2])
 
-        return left * right
+        return (left + right) if operator == "+" else (left - right)
 
-    def expression_div(self, tree):
+    def exp_multiplicative(self,tree):
         children = tree.children
 
         left = self.visit(children[0])
-        right = self.visit(children[1])
+        operator = children[1].value
+        right = self.visit(children[2])
 
-        return int(left / right)
+        if not (isinstance(left, int) & isinstance(right, int)): #TODO : raise exception incompatible type
+            return
 
-    def expression_neg(self, tree):
+        return (left * right) if operator == "*" else (int(left / right))
+
+    def exp_neg(self,tree):
         children = tree.children
 
         child = self.visit(children[0])
 
         return -child
 
-    # ========== Bool expression ==========
-
-    def expression_or(self,tree):
+    def number_value(self, tree):
         children = tree.children
+        return int(children[0])
 
-        left = self.visit(children[0])
-        right = self.visit(children[1])
-
-        return left or right
-
-    def expression_and(self,tree):
+    def boolean_value(self,tree):
         children = tree.children
+        return children[0].value[1:-1]
 
-        left = self.visit(children[0])
-        right = self.visit(children[1])
-
-        return left and right
-
-    def operation_equals(self,tree):
+    def boolean_value(self, tree):
         children = tree.children
-
-        left = self.visit(children[0])
-        right = self.visit(children[1])
-
-        return left == right
-
-    def operation_not_equals(self,tree):
-        children = tree.children
-
-        left = self.visit(children[0])
-        right = self.visit(children[1])
-
-        return left != right
-
-    def expression_not(self,tree):
-        children = tree.children
-
-        child = self.visit(children[0])
-
-        return not child
-
-    def operation_less_than_equal(self,tree):
-        children = tree.children
-
-        left = self.visit(children[0])
-        right = self.visit(children[1])
-
-        return left <= right
-
-    def operation_less_than(self,tree):
-        children = tree.children
-
-        left = self.visit(children[0])
-        right = self.visit(children[1])
-
-        return left < right
-
-    def operation_greater_than_equal(self,tree):
-        children = tree.children
-
-        left = self.visit(children[0])
-        right = self.visit(children[1])
-
-        return left >= right
-
-    def operation_greater_than(self,tree):
-        children = tree.children
-
-        left = self.visit(children[0])
-        right = self.visit(children[1])
-
-        return left > right
-
-    # ========== Basic ==========
-
-    def entier(self, tree):
-        return int(tree.children[0])
-
-    def chaine(self,tree):
-        return tree.children[0].value[1:-1]
-
-    def booleen(self,tree):
-        return tree.children[0].value == 'vrai'
+        return children[0].value == 'vrai'
 
     def liste(self,tree):
         list = []

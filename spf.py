@@ -7,7 +7,7 @@ dumping_mode = False
 tracing_mode = False
 
 def getLarkParser():
-    with open("interpreter/spf.lark", "r", encoding='utf-8') as f:
+    with open("interpreter/test2spf.lark", "r", encoding='utf-8') as f:
         grammar = f.read()
 
     return Lark(grammar, parser="lalr", propagate_positions=True)
@@ -29,8 +29,8 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", type=str, required=True, help="Input file")
-    parser.add_argument("--dump", action="store_true", help="Dump mode")
-    parser.add_argument("--trace", action="store_true", help="Trace mode")
+    parser.add_argument("-d", "--dump", action="store_true", help="Dump mode")
+    parser.add_argument("-t", "--trace", action="store_true", help="Trace mode")
 
     args = parser.parse_args()
 

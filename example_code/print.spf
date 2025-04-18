@@ -1,5 +1,5 @@
 booléen is_true;
-is_true = vrai == faux;
+is_true = 2 >= 3;
 #texte phrase = "Hello world";
 entier i = (4 + -(2 + 2 * 4 / 2))/-1;
 

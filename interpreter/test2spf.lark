@@ -1,0 +1,80 @@
+%import common.ESCAPED_STRING
+%import common.WS
+%import common.CNAME
+%ignore WS
+%ignore COMMENT
+
+start : program
+
+program : instructions
+
+instructions : instruction+
+
+instruction : instruction_print ";"
+            | assignation ";"
+            | declaration ";"
+            #| instruction_if
+            #| instruction_for_loop
+            #| instruction_while_loop
+
+declaration : TYPE VARIABLE "=" exp                          -> declare
+            | TYPE VARIABLE                                  -> declare
+
+assignation : VARIABLE "=" exp                               -> assign
+
+instruction_print : "afficher" exp ("," exp)*                -> print_expr
+
+# boolexp < mathexp < negexp
+
+?exp : bool_exp
+
+# Boolean expressions
+
+?bool_exp : or_exp
+
+?or_exp : or_exp "ou" and_exp -> exp_or
+        | and_exp
+
+?and_exp : and_exp "et" not_exp -> exp_and
+         | not_exp
+
+?not_exp : "non" not_exp -> exp_not
+         | comp_exp
+
+?comp_exp : comp_exp COMPARATOR math_exp_add                 -> operation_comparator
+          | comp_exp MATH_COMPARATOR math_exp_add            -> operation_math_comparator
+          | math_exp_add
+
+?math_exp_add : math_exp_add ADDITIVE math_exp_mul           -> exp_additive
+              | math_exp_mul
+
+?math_exp_mul : math_exp_mul MULTIPLICATIVE math_exp_neg     -> exp_multiplicative
+              | math_exp_neg
+
+?math_exp_neg : "-" math_exp_neg                             -> exp_neg
+              | atom
+
+?atom : value
+      | VARIABLE
+      | list
+      | "(" exp ")"
+
+list : "[" (exp ("," exp)*)? "]"
+
+?value : STRING -> string_value
+      | NUMBER -> number_value
+      | BOOLEAN -> boolean_value
+
+ADDITIVE : "+" | "-"
+MULTIPLICATIVE : "*" | "/"
+
+COMPARATOR : "==" | "!=" | "vaut" | "ne vaut pas"
+MATH_COMPARATOR : "<=" | "<" | ">=" | ">"
+
+STRING.2 : ESCAPED_STRING
+NUMBER.2 : /0/ | /[1-9][0-9]*/
+BOOLEAN.2 : "vrai" | "faux"
+
+TYPE.2 : "entier" | "liste" | "booléen" | "texte"
+VARIABLE : CNAME
+COMMENT: "#" /[^\n]/*
