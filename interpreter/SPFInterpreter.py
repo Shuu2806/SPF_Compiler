@@ -1,4 +1,4 @@
-from lark import Tree, Token
+from interpreter.type import Type
 from lark.visitors import Interpreter
 from interpreter.Memory import Memory
 from functools import wraps
@@ -98,6 +98,9 @@ class SPFInterpreter(Interpreter):
 
         child = self.visit(children[0])
 
+        if not (isinstance(child, bool)):
+            return Exception(f"Invalid type for not operation")
+
         return not child
 
     def operation_comparator(self, tree):
@@ -115,6 +118,9 @@ class SPFInterpreter(Interpreter):
         left = self.visit(children[0])
         operator = children[1].value
         right = self.visit(children[2])
+
+        if not (isinstance(left, int) & isinstance(right, int)):
+            return Exception(f"Invalid type for {operator} operation")
 
         match operator:
             case "<":
@@ -135,6 +141,9 @@ class SPFInterpreter(Interpreter):
         operator = children[1].value
         right = self.visit(children[2])
 
+        if not (isinstance(left, int) & isinstance(right, int)):
+            return Exception(f"Invalid type for {operator} operation")
+
         return (left + right) if operator == "+" else (left - right)
 
     def exp_multiplicative(self,tree):
@@ -144,8 +153,8 @@ class SPFInterpreter(Interpreter):
         operator = children[1].value
         right = self.visit(children[2])
 
-        if not (isinstance(left, int) & isinstance(right, int)): #TODO : raise exception incompatible type
-            return
+        if not (isinstance(left, int) & isinstance(right, int)):
+            return Exception(f"Invalid type for {operator} operation")
 
         return (left * right) if operator == "*" else (int(left / right))
 
@@ -154,7 +163,69 @@ class SPFInterpreter(Interpreter):
 
         child = self.visit(children[0])
 
+        if not isinstance(child, int):
+            raise Exception("Invalid type for negation")
+
         return -child
+
+    # ========== List op ==========
+
+    def list_value(self,tree):
+        children = tree.children
+        list = []
+        for child in children:
+            list.append(self.visit(child))
+        return list
+
+    def add_to_list(self,tree):
+        children = tree.children
+
+        value_to_add = self.visit(children[0])
+        var_name = children[1].value
+
+        # Throw exception if variable is not declared or initialized
+        var = self.symbol_table.get(var_name)
+
+        if var.get_type() != Type.liste:
+            raise Exception(f"Variable '{var_name}' is not a list")
+
+        new_list = var.get_value()
+        new_list.append(value_to_add)
+
+        self.symbol_table.set(var_name, new_list)
+
+    def list_range(self,tree):
+        children = tree.children
+
+        start = self.visit(children[0])
+        end = self.visit(children[1])
+
+        if not (isinstance(start, int) & isinstance(end, int)):
+            raise Exception("Invalid range")
+
+        if start > end:
+            raise Exception("Invalid range")
+
+        return list(range(start, end + 1))
+
+    def list_index(self,tree):
+        children = tree.children
+
+        var_name = children[0].value
+        index = self.visit(children[1])
+
+        # Throw exception if variable is not declared or initialized
+        var = self.symbol_table.get(var_name)
+
+        if var.get_type() != Type.liste:
+            raise Exception(f"Variable '{var_name}' is not a list")
+
+        new_list = var.get_value()
+
+        if index < 0 or index >= len(new_list):
+            raise Exception(f"Index {index} out of range for list '{var_name}'")
+
+        return new_list[index]
 
     # ========== Basic ==========
 
@@ -179,10 +250,3 @@ class SPFInterpreter(Interpreter):
     def boolean_value(self, tree):
         children = tree.children
         return children[0].value == 'vrai'
-
-    def liste(self,tree):
-        children = tree.children
-        list = []
-        for child in children:
-            list.append(self.visit(child))
-        return list

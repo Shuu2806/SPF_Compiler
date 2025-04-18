@@ -13,9 +13,10 @@ instructions : instruction+
 instruction : instruction_print ";"
             | assignation ";"
             | declaration ";"
-            #| instruction_if
-            #| instruction_for_loop
-            #| instruction_while_loop
+            | instruction_ajout ";"
+            | instruction_if_else
+            | instruction_for_loop
+            | instruction_while_loop
 
 declaration : TYPE VARIABLE "=" exp                          -> declare
             | TYPE VARIABLE                                  -> declare
@@ -23,6 +24,14 @@ declaration : TYPE VARIABLE "=" exp                          -> declare
 assignation : VARIABLE "=" exp                               -> assign
 
 instruction_print : "afficher" exp ("," exp)*                -> print_exp
+
+instruction_ajout : "ajouter" exp "dans" VARIABLE            -> add_to_list
+
+instruction_if_else : "si" exp "alors" "{" instructions "}" ("sinon" "{" instructions "}")? -> if_else
+
+instruction_for_loop : "pour chaque" TYPE VARIABLE "dans" exp "faire" "{" instructions "}"  -> for_loop
+
+instruction_while_loop : "tant que" exp "faire" "{" instructions "}"                        -> while_loop
 
 ?exp : or_exp
 
@@ -53,6 +62,8 @@ instruction_print : "afficher" exp ("," exp)*                -> print_exp
       | "(" exp ")"
 
 list : "[" (exp ("," exp)*)? "]"                             -> list_value
+     | "[" exp ":" exp "]"                                   -> list_range
+     | VARIABLE "[" exp "]"                                  -> list_index
 
 ?value : STRING                                              -> string_value
        | NUMBER                                              -> number_value

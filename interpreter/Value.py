@@ -25,6 +25,9 @@ class Value:
     def get_value(self):
         return self.var_value
 
+    def get_type(self):
+        return self.var_type
+
     def __repr__(self):
         if not self.is_declared:
             return "<(Undeclared)>"
