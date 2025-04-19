@@ -1,3 +1,4 @@
+from interpreter.SPFException import *
 from interpreter.type import Type
 from lark.visitors import Interpreter
 from interpreter.Memory import Memory
@@ -14,26 +15,18 @@ def trace(func):
         return result
     return wrapper
 
-#def exception_handler(func): #TODO REFAIRE AU PROPRE
-#    @wraps(func)
-#    def wrapper(self,*args, **kwargs):
-#        try:
-#            return func(self, *args, **kwargs)
-#        except Exception as e:
-#            current_token = args[0][0]
-#
-#            if isinstance(e, SPFUnknownVariable):
-#                print(f"[ERROR] Line {current_token.line} : The variable '{current_token}' is not defined")
-#            elif isinstance(e, SPFUninitializedVariable):
-#                print(f"[ERROR] Line {current_token.line} : The variable '{current_token}' is not initialized")
-#            elif isinstance(e, SPFAlreadyDefined):
-#                current_token = args[0][1]
-#                print(f"[ERROR] Line {current_token.line} : The variable '{current_token}' is already defined in this scope")
-#            elif isinstance(e, SPFIncompatibleType):
-#                print(f"[ERROR] Line {current_token.line} : Type error '{current_token}' blabla")
-#
-#            raise Exception
-#    return wrapper
+def exception_handler(func):
+    @wraps(func)
+    def wrapper(self,*args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except Exception as e:
+            current_tree = args[0]
+
+            print(f"[ERROR] Erreur d'exécution à la ligne {current_tree.meta.line} : {e}")
+
+            raise Exception("Execution error")
+    return wrapper
 
 class SPFInterpreter(Interpreter):
 
@@ -43,6 +36,7 @@ class SPFInterpreter(Interpreter):
         self.symbol_table = Memory(dumping_mode)
 
     @trace
+    @exception_handler
     def declare(self,tree):
         children = tree.children
 
@@ -56,6 +50,7 @@ class SPFInterpreter(Interpreter):
             self.symbol_table.set(var_name, value)
 
     @trace
+    @exception_handler
     def assign(self, tree):
         children = tree.children
 
@@ -64,6 +59,7 @@ class SPFInterpreter(Interpreter):
 
         self.symbol_table.set(var_name, value)
 
+    @exception_handler
     def print_exp(self, tree):
         children = tree.children
         result = []
@@ -77,6 +73,7 @@ class SPFInterpreter(Interpreter):
 
     # ========= for loop ==========
 
+    @exception_handler
     def for_loop(self, tree):
         children = tree.children
 
@@ -99,6 +96,7 @@ class SPFInterpreter(Interpreter):
 
     # ========= while loop ==========
 
+    @exception_handler
     def while_loop(self, tree):
         children = tree.children
 
@@ -117,6 +115,7 @@ class SPFInterpreter(Interpreter):
 
     # ========= if statement ==========
 
+    @exception_handler
     def if_else(self,tree):
         children = tree.children
 
@@ -142,6 +141,7 @@ class SPFInterpreter(Interpreter):
 
     # ========== Bool ==========
 
+    @exception_handler
     def exp_or(self,tree):
         children = tree.children
 
@@ -150,6 +150,7 @@ class SPFInterpreter(Interpreter):
 
         return left or right
 
+    @exception_handler
     def exp_and(self,tree):
         children = tree.children
 
@@ -158,6 +159,7 @@ class SPFInterpreter(Interpreter):
 
         return left and right
 
+    @exception_handler
     def exp_not(self,tree):
         children = tree.children
 
@@ -168,6 +170,7 @@ class SPFInterpreter(Interpreter):
 
         return not child
 
+    @exception_handler
     def operation_comparator(self, tree):
         children = tree.children
 
@@ -177,6 +180,7 @@ class SPFInterpreter(Interpreter):
 
         return (left == right) if operator in ("==","vaut") else (left != right)
 
+    @exception_handler
     def operation_math_comparator(self,tree):
         children = tree.children
 
@@ -199,6 +203,7 @@ class SPFInterpreter(Interpreter):
 
     # ========== Math ==========
 
+    @exception_handler
     def exp_additive(self,tree):
         children = tree.children
 
@@ -214,6 +219,7 @@ class SPFInterpreter(Interpreter):
 
         return (left + right) if operator == "+" else (left - right)
 
+    @exception_handler
     def exp_multiplicative(self,tree):
         children = tree.children
 
@@ -226,6 +232,7 @@ class SPFInterpreter(Interpreter):
 
         return (left * right) if operator == "*" else (int(left / right))
 
+    @exception_handler
     def exp_neg(self,tree):
         children = tree.children
 
@@ -238,6 +245,7 @@ class SPFInterpreter(Interpreter):
 
     # ========== List op ==========
 
+    @exception_handler
     def list_value(self,tree):
         children = tree.children
         list = []
@@ -245,6 +253,7 @@ class SPFInterpreter(Interpreter):
             list.append(self.visit(child))
         return list
 
+    @exception_handler
     def add_to_list(self,tree):
         children = tree.children
 
@@ -262,6 +271,7 @@ class SPFInterpreter(Interpreter):
 
         self.symbol_table.set(var_name, new_list)
 
+    @exception_handler
     def list_range(self,tree):
         children = tree.children
 
@@ -276,6 +286,7 @@ class SPFInterpreter(Interpreter):
 
         return list(range(start, end + 1))
 
+    @exception_handler
     def list_index(self,tree):
         children = tree.children
 
@@ -300,6 +311,7 @@ class SPFInterpreter(Interpreter):
 
         return new_list[index]
 
+    @exception_handler
     def list_size(self,tree):
         children = tree.children
 
@@ -312,6 +324,7 @@ class SPFInterpreter(Interpreter):
 
     # ========== Basic ==========
 
+    @exception_handler
     def variable_value(self,tree):
         children = tree.children
         var_name = children[0].value
@@ -322,14 +335,17 @@ class SPFInterpreter(Interpreter):
 
         return value
 
+    @exception_handler
     def number_value(self, tree):
         children = tree.children
         return int(children[0])
 
+    @exception_handler
     def string_value(self,tree):
         children = tree.children
         return children[0].value[1:-1]
 
+    @exception_handler
     def boolean_value(self, tree):
         children = tree.children
         return children[0].value == 'vrai'

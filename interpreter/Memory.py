@@ -41,14 +41,14 @@ class Memory:
             self.vars[self.code_level][variable] = new_var
             return self.vars[self.code_level][variable]
         else:
-            raise SPFAlreadyDefined()
+            raise SPFAlreadyDefined(f"Variable already defined {variable}")
 
     @dump
     def set(self, variable, value):
         current_var = self._get_var(variable)
 
         if current_var is None: # Si n'a pas trouver la variable, La variable n'a pas été déclarer
-            raise SPFUnknownVariable()
+            raise SPFUnknownVariable(f"Variable not declared {variable}")
         else: # sinon set la variable avec la nouvelle valeur
             current_var.set(value)
             return current_var
@@ -56,10 +56,10 @@ class Memory:
     def get(self, variable):
         current_var = self._get_var(variable)
         if current_var is None: # Si n'a pas trouver la variable, La variable n'a pas été déclarer
-            raise SPFUnknownVariable()
+            raise SPFUnknownVariable(f"Variable not declared {variable}")
         else: # sinon set la variable avec la nouvelle valeur
             if not current_var.is_initialized:
-                raise SPFUninitializedVariable()
+                raise SPFUninitializedVariable(f"Variable not initialized {variable}")
             else:
                 return current_var
 

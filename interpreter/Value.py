@@ -14,10 +14,10 @@ class Value:
 
     def set(self, var_value):
         if not self.is_declared:
-            raise SPFUnknownVariable()
+            raise SPFUnknownVariable(f"Variable not declared {self.var_value}")
 
         if get_type(var_value) != self.var_type:
-            raise SPFIncompatibleType()
+            raise SPFIncompatibleType(f"Incompatible type {self.var_type} =/= {get_type(var_value)}")
 
         self.var_value = var_value
         self.is_initialized = True
