@@ -75,6 +75,71 @@ class SPFInterpreter(Interpreter):
         printed = " ".join(result)
         print(printed)
 
+    # ========= for loop ==========
+
+    def for_loop(self, tree):
+        children = tree.children
+
+        var_type = children[0].value
+        var_name = children[1].value
+
+        iterable = self.visit(children[2])
+
+        if not isinstance(iterable, (list,str)):
+            raise Exception(f"Invalid type for '{iterable}' is not a iterable")
+
+        self.symbol_table.enter_scope()
+        self.symbol_table.declare(var_type, var_name)
+
+        for value in iterable:
+            self.symbol_table.set(var_name, value)
+            self.visit(children[3])
+
+        self.symbol_table.exit_scope()
+
+    # ========= while loop ==========
+
+    def while_loop(self, tree):
+        children = tree.children
+
+        condition = self.visit(children[0])
+
+        if not isinstance(condition, bool):
+            raise Exception(f"Invalid type for while condition")
+
+        self.symbol_table.enter_scope()
+
+        while condition:
+            self.visit(children[1])
+            condition = self.visit(children[0])
+
+        self.symbol_table.exit_scope()
+
+    # ========= if statement ==========
+
+    def if_else(self,tree):
+        children = tree.children
+
+        condition = self.visit(children[0])
+
+        if not isinstance(condition, bool):
+            raise Exception(f"Invalid type for if condition")
+
+        self.symbol_table.enter_scope()
+        if len(children) == 3: # if-else
+
+            if condition:
+                self.visit(children[1])
+            else:
+                self.visit(children[2])
+
+        else: # if
+
+            if condition:
+                self.visit(children[1])
+
+        self.symbol_table.exit_scope()
+
     # ========== Bool ==========
 
     def exp_or(self,tree):
@@ -110,7 +175,7 @@ class SPFInterpreter(Interpreter):
         operator = children[1].value
         right = self.visit(children[2])
 
-        return (left == right) if operator == "==" else (left != right)
+        return (left == right) if operator in ("==","vaut") else (left != right)
 
     def operation_math_comparator(self,tree):
         children = tree.children
@@ -141,8 +206,11 @@ class SPFInterpreter(Interpreter):
         operator = children[1].value
         right = self.visit(children[2])
 
-        if not (isinstance(left, int) & isinstance(right, int)):
-            return Exception(f"Invalid type for {operator} operation")
+        if type(left) != type(right):
+            return Exception(f"Incompatible types for {operator} operation: {type(left)} + {type(right)}")
+
+        if isinstance(left,bool) or isinstance(right,bool):
+            return Exception(f"Invalid type for {operator} operation: {type(left)} + {type(right)}")
 
         return (left + right) if operator == "+" else (left - right)
 
@@ -214,6 +282,11 @@ class SPFInterpreter(Interpreter):
         var_name = children[0].value
         index = self.visit(children[1])
 
+        if not isinstance(index, int):
+            raise Exception(f"Invalid type for index '{index}' is not an int")
+
+        index -= 1 # reduit l'index de 1 pour le faire correspondre à la liste
+
         # Throw exception if variable is not declared or initialized
         var = self.symbol_table.get(var_name)
 
@@ -226,6 +299,16 @@ class SPFInterpreter(Interpreter):
             raise Exception(f"Index {index} out of range for list '{var_name}'")
 
         return new_list[index]
+
+    def list_size(self,tree):
+        children = tree.children
+
+        variable = self.visit(children[0])
+
+        if not isinstance(variable, (list,str)):
+            raise Exception(f"Invalid type for '{variable}' is not a list or string")
+
+        return len(variable)
 
     # ========== Basic ==========
 

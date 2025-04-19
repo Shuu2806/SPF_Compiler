@@ -11,13 +11,6 @@ def dump(func):
         return result
     return wrapper
 
-def ensure_scope(func):
-    @wraps(func)
-    def wrapper(self,*args, **kwargs):
-        self._ensure_scope_exists()
-        return func(self, *args, **kwargs)
-    return wrapper
-
 class Memory:
 
     @dump
@@ -25,13 +18,21 @@ class Memory:
         self.dumping_mode = dumping_mode
         self.code_level = 1
         self.vars = {}
+        self._ensure_scope_exists()
 
     def _ensure_scope_exists(self):
         if self.code_level not in self.vars:
             self.vars[self.code_level] = {}
 
+    def enter_scope(self):
+        self.code_level += 1
+        self._ensure_scope_exists()
+
+    def exit_scope(self):
+        del self.vars[self.code_level]
+        self.code_level -= 1
+
     @dump
-    @ensure_scope
     def declare(self, var_type, variable):
         new_var = Value()
         new_var.declare(var_type)
@@ -43,7 +44,6 @@ class Memory:
             raise SPFAlreadyDefined()
 
     @dump
-    @ensure_scope
     def set(self, variable, value):
         current_var = self._get_var(variable)
 
@@ -53,7 +53,6 @@ class Memory:
             current_var.set(value)
             return current_var
 
-    @ensure_scope
     def get(self, variable):
         current_var = self._get_var(variable)
         if current_var is None: # Si n'a pas trouver la variable, La variable n'a pas été déclarer

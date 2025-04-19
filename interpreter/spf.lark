@@ -29,9 +29,9 @@ instruction_ajout : "ajouter" exp "dans" VARIABLE            -> add_to_list
 
 instruction_if_else : "si" exp "alors" "{" instructions "}" ("sinon" "{" instructions "}")? -> if_else
 
-instruction_for_loop : "pour chaque" TYPE VARIABLE "dans" exp "faire" "{" instructions "}"  -> for_loop
+instruction_for_loop : "pour" "chaque" TYPE VARIABLE "dans" exp "faire" "{" instructions "}"  -> for_loop
 
-instruction_while_loop : "tant que" exp "faire" "{" instructions "}"                        -> while_loop
+instruction_while_loop : "tant" "que" exp "faire" "{" instructions "}"                        -> while_loop
 
 ?exp : or_exp
 
@@ -64,6 +64,7 @@ instruction_while_loop : "tant que" exp "faire" "{" instructions "}"            
 list : "[" (exp ("," exp)*)? "]"                             -> list_value
      | "[" exp ":" exp "]"                                   -> list_range
      | VARIABLE "[" exp "]"                                  -> list_index
+     | "taille" atom                                         -> list_size
 
 ?value : STRING                                              -> string_value
        | NUMBER                                              -> number_value
@@ -81,5 +82,6 @@ NUMBER.2 : /0/ | /[1-9][0-9]*/
 BOOLEAN.2 : "vrai" | "faux"
 
 TYPE.2 : "entier" | "liste" | "booléen" | "texte"
-VARIABLE : CNAME
+VARIABLE : LETTER (LETTER | NUMBER)*
+LETTER : /[a-zA-ZàâäéèêëîïôöùûüÿÀÂÄÉÈÊËÎÏÔÖÙÛÜŸ_]/
 COMMENT: "#" /[^\n]/*
