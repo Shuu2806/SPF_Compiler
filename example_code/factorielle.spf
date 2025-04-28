@@ -1,4 +1,5 @@
 entier nombre = 5;
+entier i = nombre;
 entier factorielle;
 
 factorielle = 1;
@@ -7,4 +8,4 @@ tant que nombre > 0 faire {
     nombre = nombre - 1;
 }
 
-afficher "La factorielle vaut", factorielle;
+afficher "La factorielle de :", i ,"vaut", factorielle;
