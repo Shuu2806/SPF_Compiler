@@ -1,4 +1,5 @@
 from interpreter.Value import Value
+import sys
 from functools import wraps
 from interpreter.SPFException import *
 
@@ -7,7 +8,12 @@ def dump(func):
     def wrapper(self,*args, **kwargs):
         result = func(self, *args, **kwargs)
         if self.dumping_mode:
-            print("[DUMP] Memory : " + str(self.vars))
+            print("[DUMP] Memory :" ,file=sys.stderr)
+            for level in self.vars:
+                print(f"    [DUMP] Scope {level} :", file=sys.stderr)
+                for var_name, var in self.vars[level].items():
+                    print(f"        [DUMP]  {var.get_type()} {var_name} : {var.get_value()} ", file=sys.stderr)
+        print(file=sys.stderr)
         return result
     return wrapper
 

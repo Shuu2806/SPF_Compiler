@@ -1,4 +1,5 @@
 from interpreter.SPFException import *
+import sys
 from interpreter.type import Type
 from lark.visitors import Interpreter
 from interpreter.Memory import Memory
@@ -11,7 +12,7 @@ def trace(func):
             print(f"[TRACE] Appel de {func.__name__}({', '.join(map(repr, args))})")
         result = func(self, *args, **kwargs)
         if self.tracing_mode:
-            print(f"[TRACE] {func.__name__} a retourné {result!r}")
+            print(f"[TRACE] {func.__name__} a retourné {result!r}", file=sys.stderr)
         return result
     return wrapper
 
@@ -35,7 +36,6 @@ class SPFInterpreter(Interpreter):
         self.tracing_mode = tracing_mode
         self.symbol_table = Memory(dumping_mode)
 
-    @trace
     @exception_handler
     def declare(self,tree):
         children = tree.children
@@ -45,17 +45,25 @@ class SPFInterpreter(Interpreter):
 
         self.symbol_table.declare(var_type, var_name)
 
+        if self.tracing_mode:
+            if len(children) == 3:
+                print(f"[TRACE] declare : {var_type} {var_name} = {self.visit(children[2])} \n", file=sys.stderr)
+            else:
+                print(f"[TRACE] declare : {var_type} {var_name} \n", file=sys.stderr)
+
         if len(children) == 3:
             value = self.visit(children[2])
             self.symbol_table.set(var_name, value)
 
-    @trace
     @exception_handler
     def assign(self, tree):
         children = tree.children
 
         var_name = children[0].value
         value = self.visit(children[1])
+
+        if self.tracing_mode:
+            print(f"[TRACE] modifie : {var_name} = {value} \n", file=sys.stderr)
 
         self.symbol_table.set(var_name, value)
 
@@ -332,6 +340,9 @@ class SPFInterpreter(Interpreter):
         # Throw exception if variable is not declared or initialized
         var = self.symbol_table.get(var_name)
         value = var.get_value()
+
+        if self.tracing_mode:
+            print(f"[TRACE] accède : {var_name} = {value} \n", file=sys.stderr)
 
         return value
 

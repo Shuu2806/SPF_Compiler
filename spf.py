@@ -10,6 +10,23 @@ dumping_mode = False
 tracing_mode = False
 
 
+def getLarkParser():
+    with open("interpreter/spf.lark", "r", encoding='utf-8') as f:
+        grammar = f.read()
+
+    return Lark(grammar, parser="lalr", propagate_positions=True)
+
+
+def SPFParser(program):
+    parser = getLarkParser()  # crée un parser avec la grammaire défini dans spf.lark
+
+    tree = parser.parse(program)  # parse le fichier programme en un arbre
+
+    #print("Arbre syntaxique :")
+    #print(tree.pretty())
+
+    SPFInterpreter(dumping_mode, tracing_mode).visit(tree)
+
 def main():
     global dumping_mode, tracing_mode
 
@@ -20,17 +37,17 @@ def main():
 
     args = parser.parse_args()
 
-    
     if args.dump:
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="Debug: %(message)s"
-        )
+        dumping_mode = True
+
+    if args.trace:
+        tracing_mode = True
+
     parser = Lark.open("interpreter/spf.lark", parser="lalr", start="program", propagate_positions=True)
     with open("example_code/" + args.input, "r", encoding='utf-8') as f:
             program = f.read()
     try:
-        memory : Memory = SPFInterpreter().visit(parser.parse(program))
+        SPFParser(program)
     except FileNotFoundError:
         print(f"Erreur : le fichier '{args.input}' est introuvable.")
     except UnexpectedInput as e:
@@ -39,9 +56,6 @@ def main():
     except Exception as e:
         print(f"Une erreur est survenue : {e}")
         return
-    if args.trace:
-        import sys
-        print(memory, file=sys.stderr)
     
 
 if __name__ == "__main__":
